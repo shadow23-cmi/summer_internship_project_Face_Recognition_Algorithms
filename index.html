@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Rohit Aich Bhowmick Suman Polley Shoraj Tomer  Advisor: Kavita Sutar" />
+  <title>Face detection algorithms</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<STYLE type="text/css">
+  H1 { text-align: center}
+</STYLE>
+
+<STYLE type="text/css">
+  H5 { text-align: center}
+</STYLE>
+
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<h1 class="title">Face detection algorithms</h1>
+<h5 class="author">Rohit Aich Bhowmick<br />
+Suman Polley<br />
+Shoraj Tomer<br />
+<br />
+Advisor: Kavita Sutar</h5>
+</header>
+<h1 id="introduction">Introduction</h1>
+<p>Ability to recognise a face is one of the most important trait of intelligence .With advancement in vision technology (i.e. digital camera) and computing power , our curiosity to teach computer to how to recognition a face is evident . In this direction of advancement some of the earliest steps were eigenface,Fisherface and Viola-Jones face detection algorithm.</p>
+<p>We will be studying and implementing these <span class="math inline">3</span> classical face recognition algorithms: eigenfaces, Fisherfaces and Viola-Jones face detection.</p>
+<h1 id="the-eigenfaces-algorithm">The Eigenfaces algorithm</h1>
+<p>The Eigenfaces algorithm was proposed by Turk and Pentland <span><a href="#" data-reference-type="ref" data-reference="">4.2.2</a></span> in 1991. This is an SVD-based algorithm. The idea is that If we can extract and identify the features that is common to most of the faces then we can teach a computer how to distinguish between a face and a non-face based on those features. The top <span class="math inline"><em>k</em></span> features (principal components) from a set of training images are chosen by applying SVD to the co-variance matrix of the data (i.e. PCA). The images are then projected onto the subspace spanned by the chosen vectors. The Euclidean distance between images is calculated to decide whether a test image is part of the given image set or not.</p>
+<h2 id="description-of-the-algorithm">Description of the algorithm</h2>
+<h3 id="deviation-matrix">Deviation matrix</h3>
+<p>The data consists if <span class="math inline"><em>m</em></span> images <span class="math inline"><em>x</em><sub>1</sub>, <em>x</em><sub>2</sub>, …, <em>x</em><sub><em>m</em></sub></span>, each of size <span class="math inline"><em>n</em> × <em>n</em></span>, such that each images belongs to one of <span class="math inline"><em>c</em></span> classes <span class="math inline">{<em>X</em><sub>1</sub>, …<em>X</em><sub><em>c</em></sub>}</span>. The images are flattened to column vectors of size <span class="math inline"><em>n</em><sup>2</sup> × 1</span>. The average face of the set is defined by <span class="math inline"><em>Ψ</em>=</em>Σ</em><sup>m</sup><sub>n=1</sub><em>x</em><sub>n</sub></span>(See Figure <a href="#fig:avg_face" data-reference-type="ref" data-reference="fig:avg_face">1</a>). Each face differs from the average by the vector <span class="math inline"><em>Φ</em><sub><em>i</em></sub> = <em>x</em><sub><em>i</em></sub> − <em>Ψ</em></span> . Let <span class="math inline"><em>A</em></span> denote the data matrix i.e. <span class="math display"><em>A</em> = [<em>Φ</em><sub>1</sub><em>Φ</em><sub>2</sub>…<em>Φ</em><sub><em>n</em></sub>],</span> (<span class="math inline">dim <em>A</em> = <em>n</em><sup>2</sup> × <em>m</em></span>). The idea now is to find the top <span class="math inline"><em>k</em></span> left singular vectors of <span class="math inline"><em>A</em></span> and the corresponding projection <span class="math inline"><em>W</em></span> which will project the given images onto the subspace spanned by the chosen vectors. As a result we will have achieved dimensionality reduction and will have retained the information that best describes the variation in the data.</p>
+<figure>
+<center><img src="images/avg_face.jpg" id="fig:avg_face" style="width:2.5cm;height:3cm" alt="Average face" /><figcaption aria-hidden="true">Average face</figcaption></center>
+</figure>
+<h3 id="eigenvectors-calculation">Eigenvectors calculation</h3>
+<p>Theoretically, the way to proceed would be to form the co-variance matrix <span class="math inline"><em>C</em> = <em>A</em><em>A</em><sup><em>T</em></sup></span> and find the eigenvalues and eigenvectors of <span class="math inline"><em>C</em></span>. But <span class="math inline">dim <em>C</em> = <em>n</em><sup>2</sup> × <em>n</em><sup>2</sup></span>, so this is expensive. Instead, we find the eigenvalues/eigenvectors of <span class="math inline"><em>C</em><sup><em>T</em></sup> = <em>A</em><sup><em>T</em></sup><em>X</em></span>, which is cheaper as well as useful since it gives us the required non-zero eigenvalues and the corresponding eigenvectors. Notice that if <span class="math inline"><em>v</em><sub><em>i</em></sub></span> are the eigenvectors of <span class="math inline"><em>A</em><sup><em>T</em></sup><em>A</em></span>, then <span class="math inline"><em>A</em><sup><em>T</em></sup><em>A</em><em>v</em><sub><em>i</em></sub> = <em>λ</em><sub><em>i</em></sub><em>v</em><sub><em>i</em></sub></span> so that <span class="math inline"><em>A</em><em>A</em><sup><em>T</em></sup>(<em>A</em><em>v</em><sub><em>i</em></sub>) = <em>λ</em><sub><em>i</em></sub>(<em>A</em><em>v</em><sub><em>i</em></sub>)</span>, thus <span class="math inline"><em>A</em><em>v</em><sub><em>i</em></sub></span> are the eigenvectors of <span class="math inline"><em>A</em><em>A</em><sup><em>T</em></sup></span>. So it is enough to find the vectors <span class="math inline">{<em>v</em><sub><em>i</em></sub>}</span>. We will denote <span class="math inline"><em>L</em> = <em>A</em><sup><em>T</em></sup><em>A</em></span>, where <span class="math inline"><em>L</em><sub><em>m</em><em>n</em></sub> = <em>Φ</em><sub><em>m</em></sub><sup><em>T</em></sup><em>Φ</em><sub><em>n</em></sub></span>. And the eigenfaces(see Figure <a href="#fig:Top_9_eigenfaces" data-reference-type="ref" data-reference="fig:Top_9_eigenfaces">2</a>) as <span class="math display">$$u_l=\sum_{i=1}^k v_{li}\Phi_i \quad l=1,\dots,k$$</span></p>
+<figure>
+<center><img src="images/top_9_eigenfaces.jpg" id="fig:Top_9_eigenfaces" style="width:6.5cm;height:7.5cm" alt="Top 9 eigenfaces" /><figcaption aria-hidden="true">Top 9 eigenfaces</figcaption></center>
+</figure>
+<h3 id="projection-onto-face-space">Projection onto face-space</h3>
+<p>The eigenface images calculated from the eigenvectors of L span a basis set with which to describe face images. For Yale data-set B We have taken into account only the first 1007 images for training set and found that about 350 eigenfaces were sufficient for a very good description of the set of face images. With <span class="math inline"><em>M</em>′ = 350</span> eigenfaces. A new face image (<span class="math inline"><em>x</em></span>) is transformed into its eigenface components by: <span class="math display"><em>ω</em><sub><em>k</em></sub> = <em>u</em><sub><em>k</em></sub><sup><em>T</em></sup>(<em>x</em> − <em>Ψ</em>)</span> The weights form a vector <span class="math inline"><em>Ω</em><sub><em>T</em></sub> = [<em>ω</em><sub>1</sub>, <em>ω</em><sub>2</sub>, ...<em>ω</em><sub><em>M</em></sub>′]</span> that describes the contribution of each eigenface in representing the input face image, treating the eigenfaces as a basis set for face images. And, For a deviation image <span class="math inline"><em>Φ</em> = <em>x</em> − <em>Ψ</em></span> , its projection onto the face space is defined by: <span class="math display">$$\Phi_f = \sum_{n=1}^{M'} \omega_i u_i$$</span> Define <span class="math inline"><em>ϵ</em></span> ,the difference between an image(x) and its projection(<span class="math inline"><em>Φ</em><sub><em>f</em></sub></span>) onto face-space by: <span class="math display"><em>ϵ</em><sup>2</sup> = ||<em>Φ</em> − <em>Φ</em><sub><em>f</em></sub>||<sup>2</sup></span> Let <span class="math inline"><em>θ</em><sub><em>f</em></sub></span> is the threshold for known face and <span class="math inline"><em>θ</em><sub><em>n</em></sub></span> is the threshold for non-face. At this stage there are 3 possibilities for an input image(x) and its corresponding <span class="math inline"><em>ϵ</em></span>: (1) <span class="math inline"><em>ϵ</em> &lt; <em>θ</em><sub><em>f</em></sub></span> meaning image(x) is a known face i.e x <span class="math inline">∈</span> training set. (2) <span class="math inline"><em>θ</em><sub><em>f</em></sub> &lt; <em>ϵ</em> &lt; <em>θ</em><sub><em>n</em></sub></span> meaning image(x) is a unknown face i.e x is a face and x <span class="math inline">∉</span> training set. (3) <span class="math inline"><em>ϵ</em> &gt; <em>θ</em><sub><em>n</em></sub></span> ,meaning x is a non-face.</p>
+<p>This approach to face recognition involves the following initialization operations:</p>
+<ol>
+<li><p>Acquire a set a face images for training.</p></li>
+<li><p>Calculate eigenvectors(eigenfaces) of <span class="math inline"><em>C</em></span> that contains the most important features of a face image.</p></li>
+<li><p>Consider only the first <span class="math inline"><em>K</em></span> images (eigenfaces). The space spanned by these images is called face space.</p></li>
+<li><p>Project any new image into this face space.Any non-face image must deviate from itself significantly as the basis vectors(eigenfaces) captures features of only face images ,which are supposed to be absent in non-face image.see Figure <a href="#fig:known_face" data-reference-type="ref" data-reference="fig:known_face">3</a> &amp; Figure <a href="#fig:unknown_face" data-reference-type="ref" data-reference="fig:unknown_face">4</a>.</p></li>
+</ol>
+<h2 id="experiments-and-results">Experiments and results</h2>
+<p>The Table <a href="#table:1" data-reference-type="ref" data-reference="table:1">1</a> is based on experiments on Yale data-set B. There are 38 individuals and each of them have 64 images (N.B. There are some bad images that were damaged during the image acquisition. We have cleaned the dat-set and this refined data-set is available at <a href="https://github.com/shadow23-cmi/summer_internship_project_data_directory/raw/master/CroppedYaleB.zip">CroppedYaleB.zip</a> as a zip file). The original data-set is available at <a href="http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html">yale data-set B site</a>. We have taken into account only the first 16 individuals (consisting of 1007 images)for training set. And tested on <span class="math inline">280</span> unknown face images and 100 non-face images available at <a href="https://github.com/shadow23-cmi/summer_internship_project_data_directory/raw/master/nonface.zip">nonface.zip</a> and <a href="https://github.com/shadow23-cmi/summer_internship_project_data_directory/raw/master/nonface.zip">nonface.zip</a>. Of these 287 unknown face images, images(picked at random) are of individuals 17 -38 of <a href="http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html">yale data-set B site</a>, 40 images are of unknown face images downloaded from various sites (publicly available images) through google search results of <a href="https://www.google.com/search?q=frontal+face+images&amp;tbm=isch&amp;ved=2ahUKEwi5lNnn0Y3rAhVXnEsFHdTiC88Q2-cCegQIABAA&amp;oq=frontal+face+images&amp;gs_lcp=CgNpbWcQAzIECAAQQ1Cu3QFYzuIBYJfoAWgAcAB4AIABrAGIAZ4FkgEDMC41mAEAoAEBqgELZ3dzLXdpei1pbWfAAQE&amp;sclient=img&amp;ei=IKsvX7mENde4rtoP1MWv-Aw&amp;bih=637&amp;biw=1366">frontal face images</a>, 77 frontal-face images of <a href="https://s3.amazonaws.com/nist-srd/SD18/sd18.zip">mugshot database</a>, 30 images of <a href="http://vision.ucsd.edu/datasets/yale_face_dataset_original/yalefaces.zip">yaleData-setA</a>. All the test-face images have been suitably cropped to match the dimensions of the training images. The 100 non-face images were acquired through google search of different non-face images.</p>
+<p>
+<figure class = "center">
+<center><img src="images/1.jpg" title="fig:" id="fig:known_face" style="width:2.5cm;height:3cm" alt=" a)A known face and b) its projections in face space " /> <img src="images/proj_1.jpg" title="fig:" id="fig:known_face" style="width:2.5cm;height:3cm" alt=" a)A known face and b) its projections in face space " />
+<figcaption aria-hidden="false"> a)A known face and b) its projections in face space with M' = 350
+</figcaption></center>
+</figure></p>
+<p>
+<figure>
+<center><img src="images/00125_1_F.png" title="fig:unknown_face" id="fig:unknown_face" style="width:2.5cm;height:3cm" alt="a)Unknown face image and c)no-face image and their projections b) &amp; d) in face space " /> <img src="images/proj_00125_1_F.png" title="fig:unknown_face_projection" id="fig:unknown_face" style="width:2.5cm;height:3cm" alt="a)Unknown face image and c)no-face image and their projections b) &amp; d) in face space " /> <img src="images/index.jpeg" title="fig:" id="fig:unknown_face" style="width:2.5cm;height:3cm" alt="a)Unknown face image and c)no-face image and their projections b) &amp; d) in face space " /> <img src="images/proj_index.jpeg" title="fig:" id="fig:unknown_face" style="width:2.5cm;height:3cm" alt="a)Unknown face image and c)no-face image and their projections b) &amp; d) in face space " />
+<figcaption aria-hidden="false"> a)Unknown face image and c)no-face image and their projections b) &amp; d) in face space with M' = 350
+</figcaption><center>
+</figure></p>
+<p><span class="math inline"><em>θ</em><sub><em>f</em></sub></span> is the threshold for known face and <span class="math inline"><em>θ</em><sub><em>n</em></sub></span> is the threshold for non-face. An implementation of eigenface algorithm is available as a jupyter-notebook <a href="https://colab.research.google.com/drive/1jvc0CcN-jAUMwEHkWZjlECdwhfkH4e81?usp=sharing">at this link</a>. We have calculated <span class="math inline"><em>θ</em><sub><em>f</em></sub></span> by taking 99th percentile of known faces <span class="math inline"><em>ϵ</em></span> and 1st percentile of unknown faces and taking their average.Similarly,<span class="math inline"><em>θ</em><sub><em>n</em></sub></span> by taking 99th percentile of unknown faces <span class="math inline"><em>ϵ</em></span> and 1st percentile of non-faces and taking their average.Thus we get <span class="math inline"><em>θ</em><sub><em>f</em></sub> = 4.18057</span> and <span class="math inline"><em>θ</em><sub><em>n</em></sub> = 14.49589</span> (after rounding off to 5 significant numbers). These thresholds depends on <span class="math inline"><em>M</em>′</span>. With increase in <span class="math inline"><em>M</em>′</span> the projections gets better for all images(see Figure <a href="#fig:unknown_face_and_its_projection_for differnt_M" data-reference-type="ref" data-reference="fig:unknown_face_and_its_projection_for differnt_M">5</a> and Figure <a href="#fig:nonface_and_its_projection_for differnt_M" data-reference-type="ref" data-reference="fig:nonface_and_its_projection_for differnt_M">6</a>), as a result <span class="math inline"><em>ϵ</em></span> gets smaller for all images thus <span class="math inline"><em>θ</em><sub><em>f</em></sub>&amp;<em>θ</em><sub><em>f</em></sub></span> gets smaller. <strong>N.B</strong>: Taking the 99th and 1st percentile removes any extreme point’s significance in calculating <span class="math inline"><em>θ</em><sub><em>f</em></sub>&amp;<em>θ</em><sub><em>n</em></sub></span>.</p>
+<div id="table:1">
+<table class = "center">
+<caption>Observations - I</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">Precision</td>
+<td style="text-align: center;">Recall</td>
+<td style="text-align: center;">F-score</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Known Faces</td>
+<td style="text-align: center;">1.0</td>
+<td style="text-align: center;">1.0</td>
+<td style="text-align: center;">1.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Unknown Faces</td>
+<td style="text-align: center;">0.9860</td>
+<td style="text-align: center;">0.9791</td>
+<td style="text-align: center;">0.9825</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Non-Faces</td>
+<td style="text-align: center;">0.9268</td>
+<td style="text-align: center;">0.9500</td>
+<td style="text-align: center;">0.9383</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="observations">Observations</h2>
+<h3 id="variation-in-m">Variation in <span class="math inline"><em>M</em>′</span></h3>
+<figure >
+<center>
+<img src="images/unknown_face_and_its_projection_for differnt_M.png" id="fig:unknown_face_and_its_projection_for differnt_M" style="width:10cm;height:2.5cm" alt="a)Unknown face and its projections b),c),d),e) for M&#39;= 100,300,500,700" /><figcaption aria-hidden="true">a)Unknown face and its projections b),c),d),e) for <span class="math inline"><em>M</em>′</span>= 100,300,500,700</figcaption>
+</center>
+</figure>
+<figure>
+<center>
+<img src="images/nonface_and_its_projection_for differnt_M.png" id="fig:nonface_and_its_projection_for differnt_M" style="width:10cm;height:2.5cm" alt="a)Non-face image and its projections b),c),d),e) for M&#39;= 100,300,500,700" /><figcaption aria-hidden="true">a)Non-face image and its projections b),c),d),e) for <span class="math inline"><em>M</em>′</span>= 100,300,500,700</figcaption>
+</center>
+</figure>
+<p>It may seem like the more eignefaces we take for training the model the more chance of Under fitting since they would project the unknown face and non-face images better with increase in <span class="math inline"><em>M</em>′</span>. However this is partially true . The projection of unknown faces and nonface images images would certainly get better but,so would be for known face images(even more so,since the eigenfaces created from them).</p>
+<p>Notice that the projection quality does not get significantly better after a certain <span class="math inline"><em>M</em>′</span>. The reason is, in PCA(eigneface algorithm) the eigenfaces are ranked according to their singular values so,the top eigenfaces contains most of the distinct features ,where as the bottom eigenfaces(see Figure <a href="#fig:Bottom_9_eigenfaces" data-reference-type="ref" data-reference="fig:Bottom_9_eigenfaces">7</a> contains no distinct features. Basically they are noise for us.</p>
+<figure>
+<center>
+<img src="images/last_9_eigenfaces.jpg" id="fig:Bottom_9_eigenfaces" style="width:5.5cm;height:6.5cm" alt="Bottom 9 eigenfaces for M&#39;= 350" /><figcaption aria-hidden="true">Bottom 9 eigenfaces for <span class="math inline"><em>M</em>′ = 350</span></figcaption>
+</center>
+</figure>
+<p>And with increase in noise in training model the key features that separate face from a non-face have lesser significance.</p>
+<h1 id="the-fisherfaces-algorithm">The Fisherfaces algorithm</h1>
+<p>The Fisherfaces algorithm is an improvement over the eigenfaces algorithm. It is based on Fisher’s linear discriminant (fld) <span><a href="#" data-reference-type="ref" data-reference="">4.2.2</a></span>. This method takes into consideration the between-class and within-class scatter and tries to maximize the ratio of the between-class scatter to the within-class scatter. The data is re-arranged (projected onto a suitable subspace) so that the focus is more on linearly separating the classes rather than images themselves. Thus, while PCA (the method used for eigenfaces) retains the variations that come about due to changes in lighting and facial expressions, the Fisherfaces method overcomes these to some extent by focusing on the between-class scatter rather than the total scatter.</p>
+<h2 id="description-of-the-algorithm-1">Description of the algorithm</h2>
+<p>Let <span class="math inline"><em>X</em></span> denote the image (data) matrix i.e. <span class="math display"><em>X</em> = [<em>x</em><sub>1</sub>|<em>x</em><sub>2</sub>|…|<em>x</em><sub><em>n</em></sub>],</span> (<span class="math inline">dim <em>X</em> = <em>n</em><sup>2</sup> × <em>m</em></span>) as in the eigenfaces algorithm. Let <span class="math inline"><em>S</em><sub><em>T</em></sub></span> denote the total scatter matrix of the given data, <span class="math display">$$S_T = \sum_{i=1}^{m} (x_i - \mu)(x_i - \mu)^T \mathrm{~~where~~} \mu = \frac{1}{m} \sum_{i=1}^{m} x_i.$$</span> <span class="math inline"><em>μ</em></span> is the mean or the average face of the data. Then <span class="math inline"><em>S</em><sub><em>T</em></sub> = <em>X</em><em>X</em><sup><em>T</em></sup></span> (i.e. the matrix <span class="math inline"><em>C</em></span> of the eigenfaces algorithm).</p>
+<p>Let <span class="math inline"><em>S</em><sub><em>B</em></sub></span> and <span class="math inline"><em>S</em><sub><em>W</em></sub></span> denote the between-class and within-class scatter matrices, respectively. They are defined as: <span class="math display">$$S_B =  \sum_{i=1}^{c} n_i (\mu_i - \mu)(\mu_i - \mu)^T$$</span> <span class="math display">$$S_W =  \sum_{i=1}^{c} \sum_{x_k \in X_i} (x_k - \mu_i)(x_k - \mu_i)^T$$</span> where <span class="math inline"><em>n</em><sub><em>i</em></sub></span> is the number of images in class <span class="math inline"><em>X</em><sub><em>i</em></sub></span> and <span class="math inline">$\displaystyle{\mu_i = \frac{1}{n_i} \sum_{i=1}^{n_i} x_i}$</span> is the mean image of class <span class="math inline"><em>X</em><sub><em>i</em></sub></span>.<br />
+In general, the</p>
+<h2 id="experiments-and-results-1">Experiments and results</h2>
+<h1 id="the-viola-jones-algorithm">The Viola-Jones algorithm</h1>
+<p>The Viola-Jones algorithm was proposed by Paul Viola and Michael Jones in 2001. This is one of the first algorithm which provided very good object detection rates in real-time. The main idea lies in the irregular colour composition on a human face due to shadow; which we characterize using the Haar features, which are some rectangle-like features described in the algorithm. Also, we learn about the summed area table for the calculation of integral images which helps in the computation of the Haar features in a much efficient manner. We select all the important Haar features in the image and then we check for the value of the Haar feature, if it is above a certain threshold or not, to determine whether it is a face or a non-face image.</p>
+<h2 id="description-of-the-algorithm-2">Description of the algorithm</h2>
+<p>The algorithm can be briefly described in the following stages:</p>
+<ul>
+<li><p><u>Haar Features and Integral Image</u> We divide the image frame into a grid of rectangles. Now we select a subset of this rectangle grid to form a Haar feature, here we are using 3 types of Haar Features; two-rectangle features, three-rectangle features and finally a four-rectangle feature. The regions have same shape and size, and are horizontally or vertically adjacent. We compute the sum of the pixels in the light region and subtract it from the sum of the pixels in the dark region to compute the Haar feature values. Now to make our algorithm more efficient, we use the concept of Integral images or Summed area table to compute the Haar feature values. So, the integral image at the location <span class="math inline"><em>x</em></span>, <span class="math inline"><em>y</em></span> contains the sum of the pixels above and left of <span class="math inline"><em>x</em></span>, <span class="math inline"><em>y</em></span> inclusive. <span class="math display">$$ii(x,y) = \sum\limits_{x'\leq x, y'\leq y}i(x',y')$$</span> where <span class="math inline"><em>i</em><em>i</em>(<em>x</em>, <em>y</em>)</span> is the integral image and <span class="math inline"><em>i</em>(<em>x</em>, <em>y</em>)</span> is the pixel value in the original image. Here, we observe that using the integral image, we can compute the rectangular sum using the four vertices of the considered rectangle.</p>
+<p><center><img src="images/Integral Image.png" style="width:8cm;height:5cm" alt="image" /></center></p>
+<p>The sum of the pixels within the rectangle D can be computed using the integral image value at points 1, 2, 3 and 4, it is given by 4+1-(2+3).</p></li>
+<li><p><u>AdaBoost Algorithm and Classifiers</u> This is a machine learning algorithm for selecting the best subset of features among all available features. We first initialize the weights of each training example as <span class="math inline">$w_i=\frac{1}{2m},\frac{1}{2l}$</span> for <span class="math inline"><em>y</em><sub><em>i</em></sub></span> = 0, 1 respectively, where <span class="math inline"><em>m</em></span> and <span class="math inline"><em>l</em></span> are the number of negative and positive samples. Firstly, we normalize the weights as <span class="math inline">$w_i = \frac{w_i}{\sum\limits_{j}w_j}$</span>. Now, training the weak classifiers is the most computationally expensive part of this algorithm as because, each time a new weak classifier is selected as the best, all of them have to be retrained since the training examples are weighted differently. For each feature, we sort the training examples based on feature value to find the optimal threshold and polarity. For each element in the sorted list, we have four sums; the total sum of positive example weights <span class="math inline"><em>T</em><sup>+</sup></span>, the total sum of negative example weights <span class="math inline"><em>T</em><sup>−</sup></span>, the sum of positive weights below the current example being considered <span class="math inline"><em>S</em><sup>+</sup></span> and the sum of negative weights below the current example being considered <span class="math inline"><em>S</em><sup>−</sup></span>. The error is given by: <span class="math display"><em>e</em> = <em>m</em><em>i</em><em>n</em>(<em>S</em><sup>+</sup> + <em>T</em><sup>−</sup> − <em>S</em><sup>−</sup>, <em>S</em><sup>−</sup> + <em>T</em><sup>+</sup> − <em>S</em><sup>+</sup>)</span> Threshold is set to the value of the feature at which the error is minimum. So, this way we train all the weak classifiers and they will be returned in an array. Now we select the best weak classifier amongst these by iterating through each classifier and calculating the average weighted error of each one. We update the weights as, <span class="math display"><em>w</em><sub><em>i</em></sub> = <em>w</em><sub><em>i</em></sub><em>β</em><sub><em>t</em></sub><sup>1 − <em>e</em><sub><em>i</em></sub></sup></span> where <span class="math inline">$\beta_t = \frac{e_t}{1-e_t}$</span> and <span class="math inline"><em>e</em><sub><em>i</em></sub></span> = 0 if the considered example is classified correctly and 1 otherwise. Here, <span class="math inline"><em>e</em><sub><em>t</em></sub></span> denotes the error of the best classifier for the t-th training example. Now, we store the value of <span class="math inline">$\alpha_t = log(\frac{1}{\beta_t})$</span> and the best weak classifiers in two different arrays. Finally, we construct the strong classifier using our weak classifiers. <span class="math display">$$C(x) =  \left\{
+        \begin{array}{ll}
+      1 &amp; if \sum\limits_{t=1}^{T}\alpha_t h_t(x) \geq \frac{1}{2}\sum\limits_{t=1}^{T}\alpha_t \\
+      0 &amp; otherwise \\
+    \end{array} 
+    \right.$$</span> where <span class="math inline"><em>h</em><sub><em>t</em></sub></span> is the t-th best weak classifier.</p></li>
+<li><p><u>Cascade Classifier</u> A Cascade Classifier is a multi-stage classifier that can perform detection quickly and accurately. Each stage consists of a strong classifier produced by the AdaBoost Algorithm. From one stage to another, the number of weak classifiers in a strong classifier increases. An input is evaluated on a sequential basis. If a classifier for a specific stage outputs a negative result, the input is discarded immediately. In case the output is positive, the input is forwarded onto the next stage.</p>
+<p><center><img src="images/CascadeClassifier.png" style="width:8cm;height:5cm" alt="image" /></center></p>
+<p>The training of each classifier in the Cascade classifier is similar to the training of the regular Viola-Jones algorithm. The only difference here is that after the first classifier that trains on all the training examples, each subsequent classifier is trained on all the positive examples and the wrongly classified negative examples by the previous classifier, i.e, the false positives. In our algorithm, we allow the user to put in the number of classifiers they wish to use for every layer, which can be input as an array of integers, for example, [5,10,15,20] will create four layers of classifiers with number of features 5, 10, 15 and 20 in each layer respectively. The main idea in the cascade is to reduce the false positive rate.</p></li>
+</ul>
+<h2 id="experiments-and-results-2">Experiments and results</h2>
+<h3 id="observations-for-standalone-classifiers">Observations for standalone classifiers</h3>
+<ul>
+<li><p>UFI = unconstrained facial images data-set <a href="http://ufi.kiv.zcu.cz/">ufi-cropped</a></p></li>
+<li><p>the testing data-set is from UFI</p></li>
+<li><p>Only frontal face images from the UFI data-set have been included. The images have been cropped to <span class="math inline">24 × 24</span> pixels size.</p></li>
+</ul>
+<ol>
+<li><p>Number of classifiers <span class="math inline"> = 10</span></p>
+<div id="table:2">
+<table class = "center">
+<caption>Observations - I</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;">Size of data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces,non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">93%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">53/900</td>
+<td style="text-align: center;">24/300</td>
+<td style="text-align: center;">93.58%</td>
+<td style="text-align: center;">5/50</td>
+<td style="text-align: center;">5/50</td>
+<td style="text-align: center;">90%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">86/300</td>
+<td style="text-align: center;">55/100</td>
+<td style="text-align: center;">64.75%</td>
+<td style="text-align: center;">13/50</td>
+<td style="text-align: center;">23/50</td>
+<td style="text-align: center;">64%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+<li><p>Number of classifiers <span class="math inline"> = 20</span></p>
+<div id="table:3">
+<table class="center">
+<caption>Observations - I</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;">Size of data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces,non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">3/50</td>
+<td style="text-align: center;">8/50</td>
+<td style="text-align: center;">89%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">53/900</td>
+<td style="text-align: center;">12/300</td>
+<td style="text-align: center;">94.58%</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">5/50</td>
+<td style="text-align: center;">89%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">61/300</td>
+<td style="text-align: center;">5/100</td>
+<td style="text-align: center;">83.5%</td>
+<td style="text-align: center;">11/50</td>
+<td style="text-align: center;">27/50</td>
+<td style="text-align: center;">62%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+<li><p>Number of classifiers <span class="math inline"> = 30</span></p>
+<div id="table:4">
+<table class = "center">
+<caption>Observations - I</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Dataset</th>
+<th style="text-align: center;">Size of dataset</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces,non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">2/50</td>
+<td style="text-align: center;">10/50</td>
+<td style="text-align: center;">88%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">7/900</td>
+<td style="text-align: center;">7/300</td>
+<td style="text-align: center;">98.83%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">93%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">0/300</td>
+<td style="text-align: center;">0/100</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">3/50</td>
+<td style="text-align: center;">41/50</td>
+<td style="text-align: center;">56%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+</ol>
+<h3 id="observations-for-cascaded-classifiers">Observations for cascaded classifiers</h3>
+<ol>
+<li><p>Cascade specification: <span class="math inline">10</span> layers each consisting of <span class="math inline">10</span> classifiers:</p>
+<div id="table:5">
+<table class = "center">
+<caption>Observations - II</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;">Size of data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces, non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">93%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">0/900</td>
+<td style="text-align: center;">21/300</td>
+<td style="text-align: center;">98.25%</td>
+<td style="text-align: center;">2/50</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">92%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">0/300</td>
+<td style="text-align: center;">0/100</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">2/50</td>
+<td style="text-align: center;">32/50</td>
+<td style="text-align: center;">66%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+<li><p>Cascade specification: <span class="math inline">10</span> layers each consisting of <span class="math inline">20</span> classifiers:</p>
+<div id="table:6">
+<table class = "center">
+<caption>Observations - II</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;">Size of data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces,non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">3/50</td>
+<td style="text-align: center;">8/50</td>
+<td style="text-align: center;">89%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">0/900</td>
+<td style="text-align: center;">2/300</td>
+<td style="text-align: center;">99.83%</td>
+<td style="text-align: center;">0/50</td>
+<td style="text-align: center;">5/50</td>
+<td style="text-align: center;">95%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">0/300</td>
+<td style="text-align: center;">0/100</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">39/50</td>
+<td style="text-align: center;">60%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+<li><p>Cascade specification: <span class="math inline">10</span> layers each consisting of <span class="math inline">30</span> classifiers:</p>
+<div id="table:7">
+<table class = "center">
+<caption>Observations - II</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Data-set</th>
+<th style="text-align: center;">Size of data-set</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">(Faces,non-faces)</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">Accuracy</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">positives</td>
+<td style="text-align: center;">negatives</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(10,30)</td>
+<td style="text-align: center;">0/30</td>
+<td style="text-align: center;">0/10</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">2/50</td>
+<td style="text-align: center;">9/50</td>
+<td style="text-align: center;">89%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">NIST</td>
+<td style="text-align: center;">(300,900)</td>
+<td style="text-align: center;">0/900</td>
+<td style="text-align: center;">0/300</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">6/50</td>
+<td style="text-align: center;">93%</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">UFI</td>
+<td style="text-align: center;">(100,300)</td>
+<td style="text-align: center;">0/300</td>
+<td style="text-align: center;">0/100</td>
+<td style="text-align: center;">100%</td>
+<td style="text-align: center;">1/50</td>
+<td style="text-align: center;">37/50</td>
+<td style="text-align: center;">62%</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+</ol>
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+</body>
+</html>
